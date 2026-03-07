@@ -25,7 +25,7 @@ export default function RegisterPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');
@@ -45,11 +45,28 @@ export default function RegisterPage() {
       return;
     }
 
-    // Simulate registration success
-    setSuccess('Registration successful! Redirecting to login...');
-    setTimeout(() => {
-      router.push('/login');
-    }, 2000);
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setSuccess('Registration successful! Redirecting to login...');
+        setTimeout(() => {
+          router.push('/login');
+        }, 2000);
+      } else {
+        setError(data.error || 'Registration failed');
+      }
+    } catch (error) {
+      setError('Network error. Please try again.');
+    }
   };
 
   return (

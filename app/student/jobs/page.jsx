@@ -1,102 +1,60 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
-import JobCard from '@/components/JobCard';
-import SearchFilter from '@/components/SearchFilter';
-import { JOBS, STUDENTS, APPLICATIONS } from '@/lib/constants';
+import { useEffect, useState } from 'react';
+import JobListings from '@/components/student/JobListings';
 
 export default function JobsPage() {
   const [student, setStudent] = useState(null);
-  const [filters, setFilters] = useState({
-    searchTerm: '',
-    minCGPA: '',
-    maxPackage: '',
-  });
+  const [applications, setApplications] = useState([]);
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const userId = localStorage.getItem('userId');
-    const currentStudent = STUDENTS.find((s) => s.id === userId);
-    setStudent(currentStudent);
+    const fetchData = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      try {
+        const [studentRes, applicationsRes, jobsRes] = await Promise.all([
+          fetch('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } }),
+          fetch('/api/applications', { headers: { Authorization: `Bearer ${token}` } }),
+          fetch('/api/jobs', { headers: { Authorization: `Bearer ${token}` } }),
+        ]);
+
+        const studentData = await studentRes.json();
+        const applicationsData = await applicationsRes.json();
+        const jobsData = await jobsRes.json();
+
+        setStudent(studentData);
+        setApplications(applicationsData);
+        setJobs(jobsData);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
-  const filteredJobs = useMemo(() => {
-    if (!student) return [];
-
-    return JOBS.filter((job) => {
-      const matchesSearch =
-        job.companyName.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-        job.title.toLowerCase().includes(filters.searchTerm.toLowerCase());
-
-      const matchesCGPA =
-        !filters.minCGPA || job.requiredCGPA <= parseFloat(filters.minCGPA);
-
-      const matchesPackage =
-        !filters.maxPackage || job.ctc <= parseFloat(filters.maxPackage);
-
-      return matchesSearch && matchesCGPA && matchesPackage;
-    });
-  }, [filters, student]);
-
-  const checkEligibility = (job) => {
-    if (!student) return false;
-    return (
-      student.cgpa >= job.requiredCGPA &&
-      job.allowedDepartments.includes(student.department) &&
-      student.passingYear === job.year
-    );
-  };
-
-  const hasApplied = (jobId) => {
-    return APPLICATIONS.some(
-      (app) => app.studentId === student?.id && app.jobId === jobId
-    );
-  };
-
-  const handleApply = (jobId) => {
-    alert(
-      `Applied for job: ${JOBS.find((j) => j.id === jobId)?.title}. This is a demo application.`
-    );
-  };
-
-  const handleFilterChange = (newFilters) => {
-    setFilters(newFilters);
-  };
-
-  if (!student) {
-    return <div>Loading...</div>;
+  if (loading || !student) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">
-          Browse Job Opportunities
-        </h1>
-        <p className="text-gray-600">
-          Find and apply for jobs that match your profile
-        </p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Job Listings</h1>
+        <p className="text-sm text-gray-600">Find and apply to job opportunities</p>
       </div>
 
-      <SearchFilter onFilterChange={handleFilterChange} filterType="jobs" />
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredJobs.map((job) => (
-          <JobCard
-            key={job.id}
-            job={job}
-            isEligible={checkEligibility(job)}
-            onApply={() => handleApply(job.id)}
-            hasApplied={hasApplied(job.id)}
-            userRole="student"
-          />
-        ))}
-      </div>
-
-      {filteredJobs.length === 0 && (
-        <div className="bg-white rounded-lg shadow-md p-8 text-center">
-          <p className="text-gray-500 text-lg">No jobs found matching your filters</p>
-        </div>
-      )}
+      <JobListings
+        jobs={jobs}
+        student={student}
+        applications={applications}
+        setApplications={setApplications}
+      />
     </div>
   );
 }

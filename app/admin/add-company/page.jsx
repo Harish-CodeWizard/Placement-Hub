@@ -2,16 +2,21 @@
 
 import { useState } from 'react';
 import FormInput from '@/components/FormInput';
-import { COMPANIES } from '@/lib/constants';
 
 export default function AddCompanyPage() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    password: '',
+    companyName: '',
+    industry: '',
+    description: '',
     requiredCGPA: '',
+    allowedDepartments: '',
     ctc: '',
     positions: '',
   });
+  const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
 
@@ -20,32 +25,58 @@ export default function AddCompanyPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setSuccess('');
     setError('');
+    setLoading(true);
 
-    if (
-      !formData.name ||
-      !formData.email ||
-      !formData.requiredCGPA ||
-      !formData.ctc
-    ) {
-      setError('Please fill in all required fields');
-      return;
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setError('No authentication token found');
+        setLoading(false);
+        return;
+      }
+
+      const response = await fetch('/api/companies', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          ...formData,
+          allowedDepartments: formData.allowedDepartments
+            ? formData.allowedDepartments.split(',').map(d => d.trim())
+            : null,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to add company');
+      }
+
+      const data = await response.json();
+      setSuccess('Company added successfully!');
+      setFormData({
+        name: '',
+        email: '',
+        password: '',
+        companyName: '',
+        industry: '',
+        description: '',
+        requiredCGPA: '',
+        allowedDepartments: '',
+        ctc: '',
+        positions: '',
+      });
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-
-    // Dummy company addition
-    setSuccess('Company added successfully!');
-    setFormData({
-      name: '',
-      email: '',
-      requiredCGPA: '',
-      ctc: '',
-      positions: '',
-    });
-
-    setTimeout(() => setSuccess(''), 3000);
   };
 
   return (
@@ -72,11 +103,11 @@ export default function AddCompanyPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <FormInput
-              label="Company Name"
+              label="Contact Person Name"
               name="name"
               value={formData.name}
               onChange={handleChange}
-              placeholder="e.g., Tech Solutions Inc."
+              placeholder="e.g., John Doe"
               required
             />
 
@@ -91,6 +122,41 @@ export default function AddCompanyPage() {
             />
 
             <FormInput
+              label="Password"
+              name="password"
+              type="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="Enter a secure password"
+              required
+            />
+
+            <FormInput
+              label="Company Name"
+              name="companyName"
+              value={formData.companyName}
+              onChange={handleChange}
+              placeholder="e.g., Tech Solutions Inc."
+              required
+            />
+
+            <FormInput
+              label="Industry"
+              name="industry"
+              value={formData.industry}
+              onChange={handleChange}
+              placeholder="e.g., Technology, Finance, Healthcare"
+            />
+
+            <FormInput
+              label="Description"
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              placeholder="Brief description of the company"
+            />
+
+            <FormInput
               label="Required CGPA"
               name="requiredCGPA"
               type="number"
@@ -98,7 +164,14 @@ export default function AddCompanyPage() {
               onChange={handleChange}
               placeholder="e.g., 7.5"
               step="0.1"
-              required
+            />
+
+            <FormInput
+              label="Allowed Departments (comma-separated)"
+              name="allowedDepartments"
+              value={formData.allowedDepartments}
+              onChange={handleChange}
+              placeholder="e.g., Computer Science, Information Technology"
             />
 
             <FormInput
@@ -108,7 +181,6 @@ export default function AddCompanyPage() {
               value={formData.ctc}
               onChange={handleChange}
               placeholder="e.g., 12"
-              required
             />
 
             <FormInput
@@ -117,39 +189,17 @@ export default function AddCompanyPage() {
               type="number"
               value={formData.positions}
               onChange={handleChange}
-              placeholder="e.g., 5"
+              placeholder="e.g., 10"
             />
 
             <button
               type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition"
+              disabled={loading}
+              className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50"
             >
-              Add Company
+              {loading ? 'Adding Company...' : 'Add Company'}
             </button>
           </form>
-        </div>
-
-        {/* Registered Companies */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">
-            Registered Companies
-          </h2>
-          <div className="space-y-3">
-            {COMPANIES.map((company) => (
-              <div
-                key={company.id}
-                className="p-3 bg-gray-50 rounded-lg border border-gray-200"
-              >
-                <p className="font-semibold text-gray-900 text-sm">
-                  {company.name}
-                </p>
-                <p className="text-xs text-gray-600 mt-1">{company.email}</p>
-                <p className="text-xs text-blue-600 font-medium mt-1">
-                  CGPA: {company.requiredCGPA} | CTC: ₹{company.ctc} LPA
-                </p>
-              </div>
-            ))}
-          </div>
         </div>
       </div>
     </div>

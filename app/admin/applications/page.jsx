@@ -1,29 +1,62 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import ApplicationTable from '@/components/ApplicationTable';
 import SearchFilter from '@/components/SearchFilter';
-import { APPLICATIONS } from '@/lib/constants';
 
 export default function ApplicationsPage() {
+  const [applications, setApplications] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     searchTerm: '',
     status: '',
   });
 
+  useEffect(() => {
+    const fetchApplications = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      try {
+        const response = await fetch('/api/applications', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await response.json();
+        setApplications(data);
+      } catch (error) {
+        console.error('Error fetching applications:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchApplications();
+  }, []);
+
   const filteredApplications = useMemo(() => {
-    return APPLICATIONS.filter((app) => {
-      const matchesSearch =
-        app.studentName.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-        app.companyName
-          .toLowerCase()
-          .includes(filters.searchTerm.toLowerCase());
+    return applications.filter((app) => {
+      const matchesSearch = !filters.searchTerm ||
+        app.student.user.name.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+        app.job.company.companyName.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+        app.job.title.toLowerCase().includes(filters.searchTerm.toLowerCase());
 
       const matchesStatus = !filters.status || app.status === filters.status;
 
       return matchesSearch && matchesStatus;
     });
-  }, [filters]);
+  }, [applications, filters]);
+
+  const transformedApplications = useMemo(() => {
+    return filteredApplications.map((app) => ({
+      id: app.id,
+      studentName: app.student.user.name,
+      companyName: app.job.company.companyName,
+      position: app.job.title,
+      appliedDate: app.appliedAt,
+      status: app.status,
+      resume: app.student.resume || 'resume.pdf',
+    }));
+  }, [filteredApplications]);
 
   const handleFilterChange = (newFilters) => {
     setFilters(newFilters);
@@ -34,13 +67,17 @@ export default function ApplicationsPage() {
   };
 
   const statusStats = {
-    applied: APPLICATIONS.filter((a) => a.status === 'Applied').length,
-    underReview: APPLICATIONS.filter((a) => a.status === 'Under Review').length,
-    shortlisted: APPLICATIONS.filter((a) => a.status === 'Shortlisted').length,
-    interview: APPLICATIONS.filter((a) => a.status === 'Interview').length,
-    selected: APPLICATIONS.filter((a) => a.status === 'Selected').length,
-    rejected: APPLICATIONS.filter((a) => a.status === 'Rejected').length,
+    applied: applications.filter((a) => a.status === 'Applied').length,
+    underReview: applications.filter((a) => a.status === 'Under Review').length,
+    shortlisted: applications.filter((a) => a.status === 'Shortlisted').length,
+    interview: applications.filter((a) => a.status === 'Interview').length,
+    selected: applications.filter((a) => a.status === 'Selected').length,
+    rejected: applications.filter((a) => a.status === 'Rejected').length,
   };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div>
@@ -103,12 +140,12 @@ export default function ApplicationsPage() {
       />
 
       <ApplicationTable
-        applications={filteredApplications}
+        applications={transformedApplications}
         onViewResume={handleViewResume}
         showStudentName={true}
       />
 
-      {filteredApplications.length === 0 && (
+      {transformedApplications.length === 0 && (
         <div className="bg-white rounded-lg shadow-md p-8 text-center">
           <p className="text-gray-500 text-lg">No applications found</p>
         </div>

@@ -5,14 +5,14 @@ import StatusTimeline from '../StatusTimeline';
 export default function ApplicationStatus({ applications }) {
   // Define the complete application process steps
   const applicationSteps = [
-    { label: 'Applied', description: 'Application submitted successfully', icon: '📝' },
-    { label: 'Under Review', description: 'HR team reviewing your application', icon: '🔍' },
-    { label: 'Shortlisted', description: 'Selected for further evaluation', icon: '✅' },
-    { label: 'Technical Interview', description: 'Technical skills assessment', icon: '💻' },
-    { label: 'HR Interview', description: 'Cultural fit and final discussion', icon: '👥' },
-    { label: 'Final Selection', description: 'Decision pending from management', icon: '🎯' },
-    { label: 'Offer Extended', description: 'Job offer sent to you', icon: '📋' },
-    { label: 'Accepted', description: 'Offer accepted and joined the company', icon: '🎉' },
+    { label: 'Applied', shortLabel: 'Applied', description: 'Application submitted successfully', icon: '📝' },
+    { label: 'Under Review', shortLabel: 'Review', description: 'HR team reviewing your application', icon: '🔍' },
+    { label: 'Shortlisted', shortLabel: 'Shortlisted', description: 'Selected for further evaluation', icon: '✅' },
+    { label: 'Technical Interview', shortLabel: 'Tech Int.', description: 'Technical skills assessment', icon: '💻' },
+    { label: 'HR Interview', shortLabel: 'HR Int.', description: 'Cultural fit and final discussion', icon: '👥' },
+    { label: 'Final Selection', shortLabel: 'Final Sel.', description: 'Decision pending from management', icon: '🎯' },
+    { label: 'Offer Extended', shortLabel: 'Offer Sent', description: 'Job offer sent to you', icon: '📋' },
+    { label: 'Accepted', shortLabel: 'Accepted', description: 'Offer accepted and joined the company', icon: '🎉' },
   ];
 
   // Map current status to step index

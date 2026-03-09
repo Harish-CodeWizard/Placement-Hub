@@ -56,7 +56,8 @@ export default function StatusTimeline({ currentStatus, statuses }) {
                       isCurrent ? 'text-blue-600' : isCompleted ? 'text-emerald-600' : 'text-gray-500'
                     }`}
                   >
-                    {status.label}
+                    <span className="md:hidden">{status.shortLabel || status.label}</span>
+                    <span className="hidden md:inline">{status.label}</span>
                   </p>
                   {isCurrent && (
                     <p className="text-xs text-gray-500 mt-1 leading-tight max-w-20">
@@ -77,7 +78,8 @@ export default function StatusTimeline({ currentStatus, statuses }) {
           <p className="text-sm text-gray-800">
             <span className="font-semibold">Current Status:</span>{' '}
             <span className={`font-medium ${safeCurrentStep >= 0 ? 'text-emerald-600' : 'text-gray-600'}`}>
-              {currentStatus}
+              <span className="md:hidden">{statuses[safeCurrentStep]?.shortLabel || currentStatus}</span>
+              <span className="hidden md:inline">{currentStatus}</span>
             </span>
           </p>
         </div>

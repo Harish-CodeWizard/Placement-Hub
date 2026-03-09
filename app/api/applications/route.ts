@@ -168,12 +168,31 @@ export async function PATCH(request: NextRequest) {
   try {
     const { id, status } = await request.json();
 
-    const application = await prisma.application.update({
+    // Find the company
+    const company = await prisma.company.findUnique({
+      where: { userId: user.userId },
+    });
+    if (!company) {
+      return NextResponse.json({ error: 'Company not found' }, { status: 404 });
+    }
+
+    // Check if the application belongs to one of the company's jobs
+    const application = await prisma.application.findUnique({
+      where: { id },
+      include: {
+        job: true,
+      },
+    });
+    if (!application || application.job.companyId !== company.id) {
+      return NextResponse.json({ error: 'Application not found or access denied' }, { status: 404 });
+    }
+
+    const updatedApplication = await prisma.application.update({
       where: { id },
       data: { status },
     });
 
-    return NextResponse.json(application);
+    return NextResponse.json(updatedApplication);
   } catch (error) {
     console.error('Error updating application:', error);
     return NextResponse.json(

@@ -11,6 +11,12 @@ export default function ApplicationsReview({ applications, setApplications }) {
 
   const handleStatusChange = async (id, status) => {
     const token = localStorage.getItem('token');
+    if (!token) {
+      alert('Session expired. Please login again.');
+      window.location.href = '/login';
+      return;
+    }
+
     try {
       const response = await fetch('/api/applications', {
         method: 'PATCH',
@@ -23,9 +29,17 @@ export default function ApplicationsReview({ applications, setApplications }) {
 
       if (response.ok) {
         setApplications(applications.map(a => a.id === id ? { ...a, status } : a));
+      } else if (response.status === 401) {
+        alert('Session expired. Please login again.');
+        localStorage.clear();
+        window.location.href = '/login';
+      } else {
+        const errorData = await response.json();
+        alert(`Failed to update status: ${errorData.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error updating application:', error);
+      alert('Network error. Please try again.');
     }
   };
 
@@ -57,7 +71,6 @@ export default function ApplicationsReview({ applications, setApplications }) {
               <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">CGPA</th>
               <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Resume</th>
               <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Status</th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -85,14 +98,6 @@ export default function ApplicationsReview({ applications, setApplications }) {
                       <option key={status} value={status}>{status}</option>
                     ))}
                   </select>
-                </td>
-                <td className="px-6 py-4">
-                  <button
-                    onClick={() => handleStatusChange(app.id, app.status)}
-                    className="text-blue-600 hover:text-blue-800 text-sm"
-                  >
-                    Update
-                  </button>
                 </td>
               </tr>
             ))}

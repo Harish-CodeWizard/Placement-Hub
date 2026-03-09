@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-export default function Navbar() {
+export default function Navbar({ onMenuClick }) {
   const router = useRouter();
   const [userName, setUserName] = useState('User');
   const [userRole, setUserRole] = useState('Guest');
@@ -48,8 +48,17 @@ export default function Navbar() {
 
   return (
     <nav className="bg-white border-b border-gray-200 card-shadow sticky top-0 z-40">
-      <div className="px-8 py-4 flex justify-between items-center">
+      <div className="px-4 md:px-8 py-4 flex justify-between items-center">
         <div className="flex items-center gap-3">
+          <button
+            onClick={onMenuClick}
+            className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            aria-label="Toggle menu"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
           <div className={`w-9 h-9 ${colors.bg} rounded-lg flex items-center justify-center transition-smooth`}>
             <span className="text-white font-bold text-sm">PH</span>
           </div>

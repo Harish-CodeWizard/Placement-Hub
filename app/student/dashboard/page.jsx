@@ -45,8 +45,8 @@ export default function StudentDashboard() {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
-  const shortlistedCount = applications.filter((app) => app.status === 'Shortlisted').length;
-  const selectedCount = applications.filter((app) => app.status === 'Selected').length;
+  const shortlistedCount = (Array.isArray(applications) ? applications : []).filter((app) => app.status === 'Shortlisted').length;
+  const selectedCount = (Array.isArray(applications) ? applications : []).filter((app) => app.status === 'Selected').length;
 
   const cards = [
     {

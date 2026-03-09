@@ -23,7 +23,9 @@ export default function JobPostingManagement({ jobs, setJobs, companies }) {
     const data = {
       ...formData,
       requiredCGPA: parseFloat(formData.requiredCGPA),
-      allowedDepartments: formData.allowedDepartments.split(',').map(d => d.trim()),
+      allowedDepartments: formData.allowedDepartments.toLowerCase().trim() === 'any' 
+        ? ['any'] 
+        : formData.allowedDepartments.split(',').map(d => d.trim()),
       year: parseInt(formData.year),
       ctc: parseFloat(formData.ctc),
       positions: parseInt(formData.positions),
@@ -71,7 +73,10 @@ export default function JobPostingManagement({ jobs, setJobs, companies }) {
       title: job.title,
       description: job.description,
       requiredCGPA: job.requiredCGPA.toString(),
-      allowedDepartments: job.allowedDepartments ? JSON.parse(job.allowedDepartments).join(', ') : '',
+      allowedDepartments: job.allowedDepartments ? (() => {
+        const depts = JSON.parse(job.allowedDepartments);
+        return depts.length === 1 && depts[0] === 'any' ? 'any' : depts.join(', ');
+      })() : '',
       year: job.year.toString(),
       ctc: job.ctc.toString(),
       positions: job.positions.toString(),
@@ -143,7 +148,7 @@ export default function JobPostingManagement({ jobs, setJobs, companies }) {
             />
             <input
               type="text"
-              placeholder="Allowed Departments (comma separated)"
+              placeholder="Allowed Departments (comma separated, or 'any' for no restrictions)"
               value={formData.allowedDepartments}
               onChange={(e) => setFormData({ ...formData, allowedDepartments: e.target.value })}
               className="border rounded px-3 py-2"

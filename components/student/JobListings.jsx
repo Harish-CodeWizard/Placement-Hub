@@ -9,7 +9,7 @@ export default function JobListings({ jobs, student, applications, setApplicatio
   });
 
   // Add null checks
-  if (!student || !jobs || !applications) {
+  if (!student || !jobs || !Array.isArray(applications)) {
     return <div className="bg-white rounded-lg shadow-md p-6">
       <div className="text-center text-gray-500">Loading job listings...</div>
     </div>;
@@ -37,6 +37,9 @@ export default function JobListings({ jobs, student, applications, setApplicatio
   });
 
   const isEligible = (job) => {
+    // Check if student is approved
+    if (student.status !== 'approved') return false;
+
     const studentCgpa = parseFloat(student.cgpa) || 0;
     const jobRequiredCgpa = parseFloat(job.requiredCGPA) || 0;
 
@@ -44,8 +47,17 @@ export default function JobListings({ jobs, student, applications, setApplicatio
 
     if (!job.allowedDepartments) return true;
 
+    // Check if "any" is specified (no department restrictions)
+    if (job.allowedDepartments === '["any"]' || job.allowedDepartments === 'any') {
+      return true;
+    }
+
     try {
       const allowedDepts = JSON.parse(job.allowedDepartments);
+      // Also check if the parsed array contains "any"
+      if (allowedDepts.includes('any')) {
+        return true;
+      }
       return allowedDepts.includes(student.department);
     } catch (error) {
       console.error('Error parsing allowed departments in eligibility check:', error);

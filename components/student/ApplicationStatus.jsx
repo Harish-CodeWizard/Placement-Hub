@@ -3,6 +3,9 @@
 import StatusTimeline from '../StatusTimeline';
 
 export default function ApplicationStatus({ applications }) {
+  // Ensure applications is always an array
+  const safeApplications = Array.isArray(applications) ? applications : [];
+
   // Define the complete application process steps
   const applicationSteps = [
     { label: 'Applied', shortLabel: 'Applied', description: 'Application submitted successfully', icon: '📝' },
@@ -65,14 +68,19 @@ export default function ApplicationStatus({ applications }) {
       <h2 className="text-base font-bold text-gray-900 mb-6">My Applications</h2>
 
       <div className="space-y-6">
-        {applications.length === 0 ? (
+        {safeApplications.length === 0 ? (
           <div className="text-center py-8">
             <div className="text-4xl mb-4">📄</div>
             <p className="text-gray-500 text-sm">No applications yet.</p>
             <p className="text-gray-400 text-xs mt-1">Start applying to jobs to see your progress here!</p>
           </div>
         ) : (
-          applications.map((app) => {
+          safeApplications.map((app) => {
+            // Skip applications with missing job data
+            if (!app.job) {
+              return null;
+            }
+
             const currentStep = getStatusStep(app.status);
             const isRejected = app.status === 'Rejected';
 
@@ -82,8 +90,8 @@ export default function ApplicationStatus({ applications }) {
                 <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
                   <div className="flex justify-between items-start">
                     <div>
-                      <h3 className="font-semibold text-gray-900 text-sm">{app.job.title}</h3>
-                      <p className="text-xs text-gray-600 mt-1">{app.job.company.companyName}</p>
+                      <h3 className="font-semibold text-gray-900 text-sm">{app.job.title || 'Unknown Job'}</h3>
+                      <p className="text-xs text-gray-600 mt-1">{app.job.company?.companyName || 'Unknown Company'}</p>
                       <p className="text-xs text-gray-500 mt-1">
                         Applied on {new Date(app.appliedAt).toLocaleDateString()}
                       </p>

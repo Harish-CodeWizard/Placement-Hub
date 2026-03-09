@@ -53,6 +53,7 @@ export async function POST(request: NextRequest) {
           userId: user.id,
           department,
           cgpa: parseFloat(cgpa),
+          status: 'approved', // Set to approved by default for new registrations
         },
       });
     } else if (role === 'company') {

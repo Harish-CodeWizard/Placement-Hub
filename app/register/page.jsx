@@ -142,9 +142,10 @@ export default function RegisterPage() {
                     value={formData.department}
                     onChange={handleChange}
                     options={[
-                      { value: 'CSE', label: 'Computer Science' },
-                      { value: 'ECE', label: 'Electronics & Communication' },
-                      { value: 'ME', label: 'Mechanical Engineering' },
+                      { value: 'Computer Science', label: 'Computer Science' },
+                      { value: 'Information Technology', label: 'Information Technology' },
+                      { value: 'Electronics', label: 'Electronics' },
+                      { value: 'Mechanical Engineering', label: 'Mechanical Engineering' },
                     ]}
                     required
                   />

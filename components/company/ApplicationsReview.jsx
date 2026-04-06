@@ -1,9 +1,17 @@
 'use client';
 
 import { useState } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 
 export default function ApplicationsReview({ applications, setApplications }) {
   const [statusFilter, setStatusFilter] = useState('');
+  const [selectedApplication, setSelectedApplication] = useState(null);
 
   const filteredApplications = applications.filter(app =>
     !statusFilter || app.status === statusFilter
@@ -76,7 +84,14 @@ export default function ApplicationsReview({ applications, setApplications }) {
           <tbody>
             {filteredApplications.map((app) => (
               <tr key={app.id} className="border-b border-gray-200">
-                <td className="px-6 py-4 text-sm font-600 text-gray-900">{app.student.user.name}</td>
+                <td className="px-6 py-4 text-sm font-600 text-gray-900">
+                  <button
+                    onClick={() => setSelectedApplication(app)}
+                    className="text-blue-600 hover:text-blue-800 underline"
+                  >
+                    {app.student.user.name}
+                  </button>
+                </td>
                 <td className="px-6 py-4 text-sm text-gray-700">{app.job.title}</td>
                 <td className="px-6 py-4 text-sm text-gray-700">{app.student.cgpa}</td>
                 <td className="px-6 py-4 text-sm text-gray-700">
@@ -107,6 +122,48 @@ export default function ApplicationsReview({ applications, setApplications }) {
 
       {filteredApplications.length === 0 && (
         <p className="text-gray-500 text-sm mt-4">No applications to review.</p>
+      )}
+
+      {selectedApplication && (
+        <Dialog open={!!selectedApplication} onOpenChange={() => setSelectedApplication(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Student Details</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Name</label>
+                <p className="text-sm text-gray-900">{selectedApplication.student.user.name}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Email</label>
+                <p className="text-sm text-gray-900">{selectedApplication.student.user.email}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Department</label>
+                <p className="text-sm text-gray-900">{selectedApplication.student.department}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">CGPA</label>
+                <p className="text-sm text-gray-900">{selectedApplication.student.cgpa}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Status</label>
+                <p className="text-sm text-gray-900">{selectedApplication.student.status}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Resume</label>
+                {selectedApplication.student.resume ? (
+                  <a href={selectedApplication.student.resume} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800">
+                    View Resume
+                  </a>
+                ) : (
+                  <p className="text-sm text-gray-500">Not provided</p>
+                )}
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );

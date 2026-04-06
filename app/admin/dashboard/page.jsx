@@ -44,19 +44,31 @@ export default function AdminDashboard() {
           }),
         ]);
 
+        // Check if responses are OK
+        if (!studentsRes.ok || !companiesRes.ok || !applicationsRes.ok || !jobsRes.ok) {
+          console.error('One or more API requests failed');
+          return;
+        }
+
         const studentsData = await studentsRes.json();
         const companiesData = await companiesRes.json();
         const applicationsData = await applicationsRes.json();
         const jobsData = await jobsRes.json();
+
+        // Ensure applicationsData is an array
+        if (!Array.isArray(applicationsData)) {
+          console.error('applicationsData is not an array:', applicationsData);
+          return;
+        }
 
         const placedStudents = new Set(
           applicationsData.filter((app) => app.status === 'Selected').map((app) => app.studentId)
         ).size;
 
         setStats({
-          totalStudents: studentsData.length,
-          totalCompanies: companiesData.length,
-          totalJobs: jobsData.length,
+          totalStudents: Array.isArray(studentsData) ? studentsData.length : 0,
+          totalCompanies: Array.isArray(companiesData) ? companiesData.length : 0,
+          totalJobs: Array.isArray(jobsData) ? jobsData.length : 0,
           totalApplications: applicationsData.length,
           placedStudents,
         });

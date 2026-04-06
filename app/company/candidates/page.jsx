@@ -1,11 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import EligibleStudents from '@/components/company/EligibleStudents';
+import CandidatesList from '@/components/company/CandidatesList';
 
 export default function CandidatesPage() {
   const [company, setCompany] = useState(null);
-  const [students, setStudents] = useState([]);
+  const [applications, setApplications] = useState([]);
+  const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -19,24 +20,29 @@ export default function CandidatesPage() {
           return;
         }
 
-        const [companyRes, studentsRes] = await Promise.all([
+        const [companyRes, applicationsRes, jobsRes] = await Promise.all([
           fetch('/api/auth/me', {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          fetch('/api/students', {
+          fetch('/api/applications', {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          fetch('/api/jobs', {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ]);
 
-        if (!companyRes.ok || !studentsRes.ok) {
+        if (!companyRes.ok || !applicationsRes.ok || !jobsRes.ok) {
           throw new Error('Failed to fetch data');
         }
 
         const companyData = await companyRes.json();
-        const studentsData = await studentsRes.json();
+        const applicationsData = await applicationsRes.json();
+        const jobsData = await jobsRes.json();
 
         setCompany(companyData);
-        setStudents(studentsData);
+        setApplications(applicationsData);
+        setJobs(jobsData.filter(job => job.companyId === companyData.id));
       } catch (err) {
         setError(err.message);
       } finally {
@@ -73,8 +79,8 @@ export default function CandidatesPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Eligible Candidates</h1>
-      <EligibleStudents students={students} company={company} />
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">View Candidates</h1>
+      <CandidatesList applications={applications} jobs={jobs} company={company} />
     </div>
   );
 }

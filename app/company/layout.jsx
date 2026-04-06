@@ -7,6 +7,7 @@ import RoleGuard from '@/components/RoleGuard';
 
 const companyMenuItems = [
   { label: 'Dashboard', href: '/company/dashboard' },
+  { label: 'Job Postings', href: '/company/job-postings' },
   { label: 'View Candidates', href: '/company/candidates' },
 ];
 

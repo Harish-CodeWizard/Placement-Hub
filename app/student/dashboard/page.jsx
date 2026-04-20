@@ -11,11 +11,16 @@ export default function StudentDashboard() {
   const [applications, setApplications] = useState([]);
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [authError, setAuthError] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
       const token = localStorage.getItem('token');
-      if (!token) return;
+      if (!token) {
+        setAuthError('Please login to continue.');
+        setLoading(false);
+        return;
+      }
 
       try {
         const [studentRes, applicationsRes, jobsRes] = await Promise.all([
@@ -28,11 +33,18 @@ export default function StudentDashboard() {
         const applicationsData = await applicationsRes.json();
         const jobsData = await jobsRes.json();
 
-        setStudent(studentData);
-        setApplications(applicationsData);
-        setJobs(jobsData);
+        if (!studentRes.ok || !studentData || studentData.error) {
+          setAuthError('Unable to load your profile. Please login again.');
+          setStudent(null);
+        } else {
+          setStudent(studentData);
+        }
+
+        setApplications(Array.isArray(applicationsData) ? applicationsData : []);
+        setJobs(Array.isArray(jobsData) ? jobsData : []);
       } catch (error) {
         console.error('Error fetching data:', error);
+        setAuthError('Unable to load dashboard data. Please refresh and try again.');
       } finally {
         setLoading(false);
       }
@@ -42,8 +54,24 @@ export default function StudentDashboard() {
   }, []);
 
   if (loading || !student) {
+    if (!loading && authError) {
+      return (
+        <div className="flex items-center justify-center min-h-screen text-red-600">
+          {authError}
+        </div>
+      );
+    }
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
+
+  const studentWithSafeUser = {
+    ...student,
+    user: {
+      name: student?.user?.name || student?.name || 'Student',
+      email: student?.user?.email || student?.email || 'Not available',
+      ...(student?.user || {}),
+    },
+  };
 
   const shortlistedCount = (Array.isArray(applications) ? applications : []).filter((app) => app.status === 'Shortlisted').length;
   const selectedCount = (Array.isArray(applications) ? applications : []).filter((app) => app.status === 'Selected').length;
@@ -79,7 +107,7 @@ export default function StudentDashboard() {
     <div className="space-y-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Welcome, {student.user.name}!
+          Welcome, {studentWithSafeUser.user.name}!
         </h1>
         <p className="text-sm text-gray-600">
           Here's your placement journey overview
@@ -89,11 +117,11 @@ export default function StudentDashboard() {
       <DashboardCards cards={cards} />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ProfileSection student={student} />
+        <ProfileSection student={studentWithSafeUser} />
         <ApplicationStatus applications={applications} />
       </div>
 
-      <JobListings jobs={jobs} student={student} applications={applications} setApplications={setApplications} />
+      <JobListings jobs={jobs} student={studentWithSafeUser} applications={applications} setApplications={setApplications} />
     </div>
   );
 }

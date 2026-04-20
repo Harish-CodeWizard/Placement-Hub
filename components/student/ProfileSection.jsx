@@ -5,10 +5,18 @@ import { useState } from 'react';
 export default function ProfileSection({ student }) {
   const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState({
-    department: student.department,
-    cgpa: student.cgpa.toString(),
-    resume: student.resume || '',
+    department: student?.department || '',
+    cgpa: student?.cgpa?.toString?.() || '',
+    resume: student?.resume || '',
   });
+
+  if (!student) {
+    return (
+      <div className="bg-white rounded-xl border border-gray-200 card-shadow p-6">
+        <div className="text-center text-gray-500">Loading profile...</div>
+      </div>
+    );
+  }
 
   const handleSave = async () => {
     const token = localStorage.getItem('token');
@@ -52,11 +60,11 @@ export default function ProfileSection({ student }) {
       <div className="space-y-3">
         <div className="flex justify-between items-center py-3 border-b border-gray-200">
           <span className="text-sm text-gray-600">Name</span>
-          <span className="font-600 text-gray-900">{student.user.name}</span>
+          <span className="font-600 text-gray-900">{student?.user?.name || student?.name || 'Student'}</span>
         </div>
         <div className="flex justify-between items-center py-3 border-b border-gray-200">
           <span className="text-sm text-gray-600">Email</span>
-          <span className="font-600 text-gray-900 text-sm">{student.user.email}</span>
+          <span className="font-600 text-gray-900 text-sm">{student?.user?.email || student?.email || 'Not available'}</span>
         </div>
         <div className="flex justify-between items-center py-3 border-b border-gray-200">
           <span className="text-sm text-gray-600">Department</span>

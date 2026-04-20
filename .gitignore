@@ -8,6 +8,11 @@ instrumentation-client.ts
 # Common ignores
 node_modules/
 .next/
+.env
+.env.*
+!.env.example
 .env*.local
 .DS_Store
 /lib/generated/prisma
+prisma/dev.db
+prisma/dev.db-journal

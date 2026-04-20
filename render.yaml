@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: placement-hub-app
+    runtime: node
+    plan: free
+    region: singapore
+    branch: main
+    buildCommand: npm install && npx prisma generate --schema prisma/schema.vercel.prisma && npx prisma db push --schema prisma/schema.vercel.prisma && npm run build
+    startCommand: npm run start
+    autoDeploy: true
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: NODE_ENV
+        value: production
+
+databases:
+  - name: placement-hub-db
+    plan: free
+    databaseName: placementhub
+    user: placementhub_user
+    region: singapore

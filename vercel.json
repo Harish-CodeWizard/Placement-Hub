@@ -1,5 +1,5 @@
 {
-  "buildCommand": "prisma generate && prisma db push && next build",
+  "buildCommand": "prisma generate --schema prisma/schema.vercel.prisma && prisma db push --schema prisma/schema.vercel.prisma && next build",
   "outputDirectory": ".next",
   "framework": "nextjs",
   "functions": {

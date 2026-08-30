@@ -5,12 +5,17 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import FormInput from '@/components/FormInput';
 
+const TEST_USERS = [
+  { email: 'admin@placement.com', role: 'Admin' },
+  { email: 'rahul@example.com', role: 'Student' },
+  { email: 'hr@techcorp.com', role: 'Company' },
+];
+
 export default function LoginPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    role: '',
   });
   const [error, setError] = useState('');
 
@@ -19,12 +24,19 @@ export default function LoginPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const fillTestUser = (email) => {
+    setFormData({
+      email,
+      password: 'demo123',
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    if (!formData.email || !formData.password || !formData.role) {
-      setError('Please fill in all fields');
+    if (!formData.email || !formData.password) {
+      setError('Please enter email and password');
       return;
     }
 
@@ -34,7 +46,10 @@ export default function LoginPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
       });
 
       const data = await response.json();
@@ -85,56 +100,6 @@ export default function LoginPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-1">
-            <div className="mb-6">
-              <label className="block text-sm font-600 text-gray-700 mb-3">
-                Select Your Role <span className="text-red-500">*</span>
-              </label>
-              <div className="grid grid-cols-1 gap-3">
-                <label className="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-smooth">
-                  <input
-                    type="radio"
-                    name="role"
-                    value="student"
-                    checked={formData.role === 'student'}
-                    onChange={handleChange}
-                    className="mr-3 text-blue-600 focus:ring-blue-500"
-                  />
-                  <div>
-                    <div className="font-600 text-gray-900">Student</div>
-                    <div className="text-sm text-gray-600">Apply for jobs and track applications</div>
-                  </div>
-                </label>
-                <label className="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-smooth">
-                  <input
-                    type="radio"
-                    name="role"
-                    value="company"
-                    checked={formData.role === 'company'}
-                    onChange={handleChange}
-                    className="mr-3 text-blue-600 focus:ring-blue-500"
-                  />
-                  <div>
-                    <div className="font-600 text-gray-900">Company / Recruiter</div>
-                    <div className="text-sm text-gray-600">Post jobs and review applications</div>
-                  </div>
-                </label>
-                <label className="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-smooth">
-                  <input
-                    type="radio"
-                    name="role"
-                    value="admin"
-                    checked={formData.role === 'admin'}
-                    onChange={handleChange}
-                    className="mr-3 text-blue-600 focus:ring-blue-500"
-                  />
-                  <div>
-                    <div className="font-600 text-gray-900">Admin (Placement Officer)</div>
-                    <div className="text-sm text-gray-600">Manage placements and oversee system</div>
-                  </div>
-                </label>
-              </div>
-            </div>
-
             <FormInput
               label="Email Address"
               name="email"
@@ -162,38 +127,22 @@ export default function LoginPage() {
               Sign In
             </button>
           </form>
-        </div>
 
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6">
-          <p className="text-sm font-bold text-blue-900 mb-4">Demo Credentials:</p>
-          <div className="space-y-4 text-sm text-blue-800">
-            <div>
-              <p className="font-semibold mb-2">Admins:</p>
-              <div className="space-y-1 ml-2">
-                <div>admin@placement.com</div>
-                <div>placement@college.edu</div>
-                <div>coordinator@placement.edu</div>
-              </div>
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <p className="text-xs font-semibold text-gray-600 mb-3 uppercase tracking-wide">Quick Access - Click to Fill:</p>
+            <div className="space-y-2">
+              {TEST_USERS.map((user) => (
+                <button
+                  key={user.email}
+                  onClick={() => fillTestUser(user.email)}
+                  className="w-full text-left p-3 border border-gray-300 rounded-lg hover:bg-blue-50 hover:border-blue-400 transition-smooth text-sm"
+                >
+                  <div className="font-600 text-gray-900">{user.role}</div>
+                  <div className="text-xs text-gray-600">{user.email}</div>
+                </button>
+              ))}
             </div>
-            <div>
-              <p className="font-semibold mb-2">Students:</p>
-              <div className="space-y-1 ml-2">
-                <div>rahul@example.com (CS, 8.5 CGPA)</div>
-                <div>priya.singh@email.com (IT, 8.2 CGPA)</div>
-                <div>amit.patel@email.com (CS, 7.8 CGPA)</div>
-                <div>sneha.reddy@email.com (Electronics, 8.7 CGPA)</div>
-              </div>
-            </div>
-            <div>
-              <p className="font-semibold mb-2">Companies:</p>
-              <div className="space-y-1 ml-2">
-                <div>hr@techcorp.com (TechCorp Solutions)</div>
-                <div>recruitment@infosys.com (Infosys)</div>
-                <div>talent@wipro.com (Wipro)</div>
-                <div>hr@tcs.com (TCS)</div>
-              </div>
-            </div>
-            <p className="text-xs text-blue-700 pt-2 border-t border-blue-200">Password: demo123 for all accounts</p>
+            <p className="text-xs text-gray-500 mt-3 text-center">Password: <span className="font-semibold">demo123</span></p>
           </div>
         </div>
 

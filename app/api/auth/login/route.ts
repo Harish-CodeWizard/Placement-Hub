@@ -7,11 +7,11 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password, role } = await request.json();
+    const { email, password } = await request.json();
 
-    if (!email || !password || !role) {
+    if (!email || !password) {
       return NextResponse.json(
-        { error: 'Email, password, and role are required' },
+        { error: 'Email and password are required' },
         { status: 400 }
       );
     }
@@ -25,21 +25,21 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    if (!user || user.role !== role) {
+    if (!user) {
       return NextResponse.json(
         { error: 'Invalid credentials' },
         { status: 401 }
       );
     }
 
-    // Skip password verification for testing
-    // const isValidPassword = await bcrypt.compare(password, user.password);
-    // if (!isValidPassword) {
-    //   return NextResponse.json(
-    //     { error: 'Invalid credentials' },
-    //     { status: 401 }
-    //   );
-    // }
+    // Verify password
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if (!isValidPassword) {
+      return NextResponse.json(
+        { error: 'Invalid credentials' },
+        { status: 401 }
+      );
+    }
 
     // Generate JWT
     const token = jwt.sign(
